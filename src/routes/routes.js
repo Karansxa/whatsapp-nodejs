@@ -10,7 +10,6 @@ const { authenticated } = require('../middleware/authenticated');
 
 const { webhook , webhook_message} = require('../controllers/whatsapp/webhook');
 
-const limiter = require('../middleware/rateLimiter');
 const { sendWhatsAppTextMessage, sendWhatsAppImageMessage, sendWhatsappVideoMessage, sendWhatsappDocumentMessage, sendWhatsappAudioMessage} = require('../controllers/whatsapp/messages');
 
 
