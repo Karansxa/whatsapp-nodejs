@@ -14,7 +14,7 @@ const signUpController = async (req, res, next) => {
                 message: "Name, email, and password are required"
             });
         }
-        
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({
@@ -105,7 +105,21 @@ const loginController = async (req, res, next) => {
     }
 }
 
+const logoutController = (req, res) => {
+    // Clear the token cookie
+    try {
+        res.clearCookie('token');
+        return res.status(200).json({
+            message: "Logout successful"
+        });
+    } catch (error) {
+        console.error('Error in logoutController:', error);  // Log the error
+        return next(error);
+    }
+}
+
 module.exports = {
     signUpController,
-    loginController
+    loginController,
+    logoutController
 }

@@ -5,12 +5,14 @@ const authenticated = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         
+        // Check If Auth Header is present
         if (!authHeader) {
             return res.status(401).json({
                 message: "Authorization header missing"
             });
         }
 
+        // Check if Token is present in Auth Header
         const token = authHeader.split(' ')[1];
         if (!token) {
             return res.status(401).json({
