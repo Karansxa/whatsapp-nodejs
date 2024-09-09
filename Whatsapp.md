@@ -43,3 +43,4 @@ Audio extension allowed and max filesize of 10mb
 // Questions
 // 1. Preview URl to be Enabled or Disabled?
 // 2. How to decode Whatsapp response code.
+// 3. Should I keep auth like this or use Passport
