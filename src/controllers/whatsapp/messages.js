@@ -1,5 +1,8 @@
 require('dotenv').config();
 const axios = require('axios');
+const https = require('https');
+
+const agent = new https.Agent({ keepAlive: true });
 
 // WhatsApp API credentials
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v20.0';
@@ -16,27 +19,44 @@ const sendWhatsAppMessage = async (payload, res) => {
                 headers: {
                     Authorization: `Bearer ${ACCESS_TOKEN}`,
                     'Content-Type': 'application/json',
-                }
+             
+                },
+                httpsAgent: agent
             }
         );
 
-        // Check response status and send response
+        //const errorCode = response?.data?.messages?.id || 'N/A';
+
         if (response.status === 200) {
             return res.status(200).json({
                 message: 'WhatsApp message sent successfully!',
-                response: response.data
+                response: response.data,
+                //code: errorCode
             });
         }
     } catch (error) {
+        const errorMessage = error.response?.data?.error?.message || error.message;
+        const errorCode = error.response?.data?.error?.code || 'N/A';
+        const errorSubcode = error.response?.data?.error?.error_subcode || 'N/A';
+
+        if(errorCode === 131030)
+        {
+            return res.status(500).json({
+                message: `Phone Number is not whitelisted on Meta Dashboard`,
+                code: errorCode,
+                subcode: errorSubcode
+            });
+        }
         return res.status(500).json({
-            message: 'Failed to send WhatsApp message.',
-            error: error.response?.data || error.message
+            message: `Failed to send WhatsApp message: ${errorMessage}`,
+            code: errorCode,
+            subcode: errorSubcode
         });
     }
 };
 
 // Generalized functions
-const sendWhatsAppTextMessage = async (req, res) => {
+const TextMessage = async (req, res) => {
     const { to, message } = req.body;
     if (!to || !message) {
         return res.status(400).json({ message: 'Recipient phone number and message are required.' });
@@ -51,11 +71,12 @@ const sendWhatsAppTextMessage = async (req, res) => {
     await sendWhatsAppMessage(payload, res);
 };
 
-const sendWhatsAppImageMessage = async (req, res) => {
+const ImageMessage = async (req, res) => {
     const { to, image_url, caption } = req.body;
     if (!to || !image_url || !caption) {
         return res.status(400).json({ message: 'Phone number, image URL, and caption are required.' });
     }
+
     const payload = {
         messaging_product: "whatsapp",
         recipient_type: "individual",
@@ -63,14 +84,16 @@ const sendWhatsAppImageMessage = async (req, res) => {
         type: "image",
         image: { link: image_url, caption }
     };
+
     await sendWhatsAppMessage(payload, res);
 };
 
-const sendWhatsappVideoMessage = async (req, res) => {
+const VideoMessage = async (req, res) => {
     const { to, video_url, caption } = req.body;
     if (!to || !video_url || !caption) {
         return res.status(400).json({ message: 'Phone number, video URL, and caption are required.' });
     }
+
     const payload = {
         messaging_product: "whatsapp",
         recipient_type: "individual",
@@ -78,29 +101,33 @@ const sendWhatsappVideoMessage = async (req, res) => {
         type: "video",
         video: { link: video_url, caption }
     };
+
     await sendWhatsAppMessage(payload, res);
 };
 
-const sendWhatsappDocumentMessage = async (req, res) => {
-    const { to, document_url, caption, filename } = req.body;
-    if (!to || !document_url || !caption || !filename) {
-        return res.status(400).json({ message: 'Phone number, document URL, caption, and filename are required.' });
+const DocumentMessage = async (req, res) => {
+    const { to, document_url, caption } = req.body;
+    if (!to || !document_url || !caption) {
+        return res.status(400).json({ message: 'Phone number, document URL, and caption are required.' });
     }
+
     const payload = {
         messaging_product: "whatsapp",
         recipient_type: "individual",
         to,
         type: "document",
-        document: { link: document_url, caption, filename }
+        document: { link: document_url, caption }
     };
+
     await sendWhatsAppMessage(payload, res);
 };
 
-const sendWhatsappAudioMessage = async (req, res) => {
+const AudioMessage = async (req, res) => {
     const { to, audio_url } = req.body;
     if (!to || !audio_url) {
         return res.status(400).json({ message: 'Phone number and audio URL are required.' });
     }
+
     const payload = {
         messaging_product: "whatsapp",
         recipient_type: "individual",
@@ -108,14 +135,16 @@ const sendWhatsappAudioMessage = async (req, res) => {
         type: "audio",
         audio: { link: audio_url }
     };
+
     await sendWhatsAppMessage(payload, res);
 };
 
-// Exporting the functions
+//const sendWhatsapp_CTA_URL
+
 module.exports = {
-    sendWhatsAppTextMessage,
-    sendWhatsAppImageMessage,
-    sendWhatsappVideoMessage,
-    sendWhatsappDocumentMessage,
-    sendWhatsappAudioMessage
+    TextMessage,
+    ImageMessage,
+    VideoMessage,
+    DocumentMessage,
+    AudioMessage
 };

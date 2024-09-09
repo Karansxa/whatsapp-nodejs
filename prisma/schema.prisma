@@ -23,3 +23,16 @@ model admin {
 
   @@map("admin")
 }
+
+model contact {
+  whatsappname
+  realname
+  assigned_staff
+  chatjson
+  group_id
+  kyc_json{"pan", "aad"}
+}
+
+model kyc{
+  
+}
